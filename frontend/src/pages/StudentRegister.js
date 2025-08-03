@@ -155,7 +155,8 @@ const StudentRegister = () => {
       
       // Handle development mode response
       if (response.data?.development_mode) {
-        setMessage('OTP sent successfully! Check the server logs for the OTP code. (Development mode)');
+        const otpCode = response.data?.otp_code;
+        setMessage(`OTP sent successfully! OTP Code: ${otpCode} (Development mode)`);
       } else {
         setMessage('OTP sent to your email! Please check and enter the verification code.');
       }
@@ -224,7 +225,8 @@ const StudentRegister = () => {
       
       // Handle development mode response
       if (response.data?.development_mode) {
-        setMessage('OTP resent successfully! Check the server logs for the OTP code. (Development mode)');
+        const otpCode = response.data?.otp_code;
+        setMessage(`OTP resent successfully! OTP Code: ${otpCode} (Development mode)`);
       } else {
         setMessage('OTP resent successfully! Please check your email.');
       }

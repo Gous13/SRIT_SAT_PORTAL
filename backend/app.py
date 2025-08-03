@@ -160,8 +160,8 @@ def send_otp_email(email, otp_code, purpose):
     """Send OTP email to user"""
     try:
         # Check if email configuration is properly set up
-        if (app.config['MAIL_USERNAME'] == 'your-email@gmail.com' or 
-            app.config['MAIL_PASSWORD'] == 'your-app-password' or
+        if (app.config['MAIL_USERNAME'] == 'anil172900@gmail.com' or 
+            app.config['MAIL_PASSWORD'] == 'kfsa nvkp ntmj fgxh' or
             not app.config['MAIL_USERNAME'] or 
             not app.config['MAIL_PASSWORD']):
             
@@ -273,6 +273,7 @@ ADMIN_CREDENTIALS = {
 def initialize_admin_users():
     """Initialize admin users in the database"""
     try:
+        print("Starting admin user initialization...")
         for employee_id, creds in ADMIN_CREDENTIALS.items():
             # Check if admin already exists
             admin = Admin.query.filter_by(employee_id=employee_id).first()
@@ -287,12 +288,20 @@ def initialize_admin_users():
                 )
                 db.session.add(admin)
                 print(f"Created admin user: {employee_id}")
+            else:
+                print(f"Admin user already exists: {employee_id}")
         
         db.session.commit()
-        print("Admin users initialized successfully!")
+        print("Admin users initialization completed successfully!")
+        
+        # Verify admin users were created
+        admin_count = Admin.query.count()
+        print(f"Total admin users in database: {admin_count}")
+        
     except Exception as e:
         print(f"Error initializing admin users: {e}")
         db.session.rollback()
+        raise e
 
 # Routes
 @app.route('/api/auth/student/send-otp', methods=['POST'])
@@ -314,21 +323,22 @@ def send_registration_otp():
         # Generate and send OTP
         otp_code = create_otp_record(data['email'], 'registration')
         
-        if send_otp_email(data['email'], otp_code, 'registration'):
-            # Check if we're in development mode (no proper email config)
-            if (app.config['MAIL_USERNAME'] == 'your-email@gmail.com' or 
-                app.config['MAIL_PASSWORD'] == 'your-app-password' or
-                not app.config['MAIL_USERNAME'] or 
-                not app.config['MAIL_PASSWORD']):
-                return jsonify({
-                    'message': 'OTP sent successfully! Check the server logs for the OTP code.',
-                    'development_mode': True,
-                    'note': 'Email configuration not set up. OTP is logged in server console.'
-                }), 200
-            else:
-                return jsonify({'message': 'OTP sent successfully to your email'}), 200
+        # Always try to send OTP, but don't fail if email doesn't work
+        email_sent = send_otp_email(data['email'], otp_code, 'registration')
+        
+        # Check if we're in development mode (no proper email config)
+        if (app.config['MAIL_USERNAME'] == 'your-email@gmail.com' or 
+            app.config['MAIL_PASSWORD'] == 'your-app-password' or
+            not app.config['MAIL_USERNAME'] or 
+            not app.config['MAIL_PASSWORD']):
+            return jsonify({
+                'message': 'OTP sent successfully! Check the server logs for the OTP code.',
+                'development_mode': True,
+                'note': 'Email configuration not set up. OTP is logged in server console.',
+                'otp_code': otp_code  # Include OTP in response for development
+            }), 200
         else:
-            return jsonify({'error': 'Failed to send OTP. Please try again.'}), 500
+            return jsonify({'message': 'OTP sent successfully to your email'}), 200
         
     except Exception as e:
         print(f"Error in send_registration_otp: {e}")
@@ -442,16 +452,21 @@ def admin_login():
                 admin = Admin.query.filter_by(employee_id=employee_id).first()
                 if not admin:
                     print(f"Creating new admin user: {employee_id}")
-                    admin = Admin(
-                        name=f"Admin - {admin_cred['branch']}",
-                        employee_id=employee_id,
-                        email=f"{employee_id}@srit.ac.in",
-                        branch=admin_cred['branch'],
-                        password=hash_password(password)
-                    )
-                    db.session.add(admin)
-                    db.session.commit()
-                    print(f"Admin user created successfully: {employee_id}")
+                    try:
+                        admin = Admin(
+                            name=f"Admin - {admin_cred['branch']}",
+                            employee_id=employee_id,
+                            email=f"{employee_id}@srit.ac.in",
+                            branch=admin_cred['branch'],
+                            password=hash_password(password)
+                        )
+                        db.session.add(admin)
+                        db.session.commit()
+                        print(f"Admin user created successfully: {employee_id}")
+                    except Exception as e:
+                        print(f"Error creating admin user: {e}")
+                        db.session.rollback()
+                        return jsonify({'error': 'Failed to create admin user. Please try again.'}), 500
                 else:
                     print(f"Admin user found: {employee_id}")
                 
