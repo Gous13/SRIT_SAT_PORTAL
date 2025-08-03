@@ -259,7 +259,7 @@ def verify_otp(email, otp_code, purpose):
     
     return True, "OTP verified successfully"
 
-# Admin credentials
+# Admin credentials mapping
 ADMIN_CREDENTIALS = {
     'admin@cse': {'password': 'Cse@srit', 'branch': 'COMPUTER SCIENCE AND ENGINEERING'},
     'admin@csd': {'password': 'Csd@srit', 'branch': 'COMPUTER SCIENCE AND ENGINEERING [DATA SCIENCE]'},
@@ -269,6 +269,30 @@ ADMIN_CREDENTIALS = {
     'admin@civ': {'password': 'Civ@srit', 'branch': 'CIVIL ENGINEERING'},
     'admin@mech': {'password': 'Mech@srit', 'branch': 'MECHANICAL ENGINEERING'}
 }
+
+def initialize_admin_users():
+    """Initialize admin users in the database"""
+    try:
+        for employee_id, creds in ADMIN_CREDENTIALS.items():
+            # Check if admin already exists
+            admin = Admin.query.filter_by(employee_id=employee_id).first()
+            if not admin:
+                # Create new admin
+                admin = Admin(
+                    name=f"Admin - {creds['branch']}",
+                    employee_id=employee_id,
+                    email=f"{employee_id}@srit.ac.in",
+                    branch=creds['branch'],
+                    password=hash_password(creds['password'])
+                )
+                db.session.add(admin)
+                print(f"Created admin user: {employee_id}")
+        
+        db.session.commit()
+        print("Admin users initialized successfully!")
+    except Exception as e:
+        print(f"Error initializing admin users: {e}")
+        db.session.rollback()
 
 # Routes
 @app.route('/api/auth/student/send-otp', methods=['POST'])
@@ -405,22 +429,31 @@ def admin_login():
         if not all(key in data for key in ['employee_id', 'password']):
             return jsonify({'error': 'Employee ID and password are required'}), 400
         
+        employee_id = data['employee_id']
+        password = data['password']
+        
+        print(f"Admin login attempt: {employee_id}")
+        
         # Check admin credentials
-        if data['employee_id'] in ADMIN_CREDENTIALS:
-            admin_cred = ADMIN_CREDENTIALS[data['employee_id']]
-            if data['password'] == admin_cred['password']:
+        if employee_id in ADMIN_CREDENTIALS:
+            admin_cred = ADMIN_CREDENTIALS[employee_id]
+            if password == admin_cred['password']:
                 # Create or get admin record
-                admin = Admin.query.filter_by(employee_id=data['employee_id']).first()
+                admin = Admin.query.filter_by(employee_id=employee_id).first()
                 if not admin:
+                    print(f"Creating new admin user: {employee_id}")
                     admin = Admin(
                         name=f"Admin - {admin_cred['branch']}",
-                        employee_id=data['employee_id'],
-                        email=f"{data['employee_id']}@srit.ac.in",
+                        employee_id=employee_id,
+                        email=f"{employee_id}@srit.ac.in",
                         branch=admin_cred['branch'],
-                        password=hash_password(data['password'])
+                        password=hash_password(password)
                     )
                     db.session.add(admin)
                     db.session.commit()
+                    print(f"Admin user created successfully: {employee_id}")
+                else:
+                    print(f"Admin user found: {employee_id}")
                 
                 return jsonify({
                     'message': 'Login successful',
@@ -435,12 +468,15 @@ def admin_login():
                     }
                 }), 200
             else:
+                print(f"Invalid password for admin: {employee_id}")
                 return jsonify({'error': 'Invalid password'}), 401
         else:
+            print(f"Invalid employee ID: {employee_id}")
             return jsonify({'error': 'Invalid employee ID'}), 401
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error in admin login: {e}")
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/api/auth/student/forgot-password', methods=['POST'])
 def forgot_password():
@@ -1792,4 +1828,5 @@ def delete_form(form_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        initialize_admin_users() # Call the new function here
     app.run(debug=True, host='0.0.0.0', port=5000) 
