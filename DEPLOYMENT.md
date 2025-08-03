@@ -20,14 +20,14 @@ This guide will help you deploy your SAT Portal to Render hosting platform.
 ### 2. Configure the Web Service
 
 **Basic Settings:**
-- **Name**: `sat-portal-backend` (or your preferred name)
+- **Name**: `sat-portal` (or your preferred name)
 - **Environment**: `Python 3`
 - **Region**: Choose closest to your users
 - **Branch**: `main` (or your default branch)
 
 **Build & Deploy Settings:**
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `gunicorn wsgi:app --bind 0.0.0.0:$PORT`
+- **Build Command**: `chmod +x build.sh && ./build.sh`
+- **Start Command**: `chmod +x start.sh && ./start.sh`
 
 ### 3. Environment Variables
 
@@ -38,6 +38,7 @@ MAIL_USERNAME=anil172900@gmail.com
 MAIL_PASSWORD=kfsa nvkp ntmj fgxh
 SECRET_KEY=your-secret-key-here
 FLASK_ENV=production
+NODE_VERSION=18
 ```
 
 ### 4. Database Configuration
@@ -46,19 +47,21 @@ For production, consider using:
 - **PostgreSQL** (Render provides free PostgreSQL)
 - **SQLite** (for simple deployments, but not recommended for production)
 
-### 5. Frontend Deployment (Optional)
+### 5. Complete Application
 
-For the React frontend, you can:
-1. Build the React app: `npm run build`
-2. Serve static files from Flask
-3. Or deploy separately as a Static Site on Render
+Your deployment will include:
+- ✅ **React Frontend**: Built and served by Flask
+- ✅ **Flask Backend**: API endpoints and business logic
+- ✅ **Email OTP**: Registration and password reset
+- ✅ **Database**: Student and certificate management
+- ✅ **File Uploads**: Certificate and form file handling
 
 ## 🔒 Security Considerations
 
 1. **Environment Variables**: Never commit `.env` files
 2. **App Passwords**: Use Gmail App Passwords, not regular passwords
 3. **HTTPS**: Render provides SSL certificates automatically
-4. **CORS**: Update CORS settings for production domain
+4. **CORS**: Configured for production domain
 
 ## 📧 Email Configuration for Production
 
@@ -78,6 +81,7 @@ For the React frontend, you can:
 1. **Build Failures**:
    - Check Python version compatibility
    - Verify all dependencies in `requirements.txt`
+   - Ensure Node.js version is compatible
 
 2. **Email Not Working**:
    - Verify App Password is correct

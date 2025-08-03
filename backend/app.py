@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
@@ -18,7 +18,7 @@ import io
 
 from config import Config
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='')
 app.config.from_object(Config)
 
 # Ensure upload folder exists
@@ -27,6 +27,27 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 mail = Mail(app)
 CORS(app)
+
+# Root route to serve React app
+@app.route('/')
+def serve_react_app():
+    return send_from_directory(app.static_folder, 'index.html')
+
+# Catch all routes to serve React app (for client-side routing)
+@app.route('/<path:path>')
+def serve_react_routes(path):
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
+# API health check
+@app.route('/api/health')
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "message": "SAT Portal API is running",
+        "timestamp": datetime.now().isoformat()
+    })
 
 # Database Models
 class Student(db.Model):
