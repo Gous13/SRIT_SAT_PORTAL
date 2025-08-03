@@ -918,10 +918,10 @@ def get_analytics():
         
         # Branch-wise statistics (only if no specific branch filter)
         if not branch:
-        branch_stats = db.session.query(
-            Certificate.branch,
-            db.func.count(Certificate.id).label('count')
-        ).group_by(Certificate.branch).all()
+            branch_stats = db.session.query(
+                Certificate.branch,
+                db.func.count(Certificate.id).label('count')
+            ).group_by(Certificate.branch).all()
         else:
             branch_stats = [{'branch': branch, 'count': base_query.count()}]
         
