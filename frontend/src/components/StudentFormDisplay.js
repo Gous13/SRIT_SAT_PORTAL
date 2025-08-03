@@ -15,7 +15,7 @@ const StudentFormDisplay = ({ form, studentId, onFormSubmitted }) => {
     if (form.has_responded) {
       loadSubmittedResponses();
     }
-  }, [form.id]);
+  }, [form.id, form.has_responded, loadSubmittedResponses]);
 
   const loadSubmittedResponses = async () => {
     setLoadingResponses(true);

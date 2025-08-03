@@ -61,7 +61,7 @@ const AdminDashboard = ({ user }) => {
   useEffect(() => {
     loadDashboardData();
     loadForms();
-  }, [loadDashboardData]);
+  }, [loadDashboardData, loadForms]);
 
   const loadCertificates = async (filters = {}) => {
     try {
@@ -221,16 +221,7 @@ const AdminDashboard = ({ user }) => {
     }
   };
 
-  const handleViewResponses = async (formId) => {
-    try {
-      const response = await adminAPI.getFormResponses(formId, user.id);
-      setSelectedForm(response.data.form);
-      setFormResponses(response.data.responses);
-      setShowResponsesModal(true);
-    } catch (error) {
-      setMessage('Failed to load form responses.');
-    }
-  };
+
 
   const handleDownloadResponses = async (formId) => {
     try {

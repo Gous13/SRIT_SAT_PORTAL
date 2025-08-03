@@ -109,12 +109,12 @@ const FormCreationModal = ({ show, onHide, onFormCreated, user }) => {
     setError('');
 
     try {
-      const response = await adminAPI.createForm({
+      await adminAPI.createForm({
         ...formData,
         admin_id: user.id
       });
 
-             // Form created successfully
+      // Form created successfully
       onFormCreated();
       onHide();
       
