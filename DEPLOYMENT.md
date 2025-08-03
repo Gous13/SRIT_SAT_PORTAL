@@ -26,8 +26,8 @@ This guide will help you deploy your SAT Portal to Render hosting platform.
 - **Branch**: `main` (or your default branch)
 
 **Build & Deploy Settings:**
-- **Build Command**: `chmod +x build.sh && ./build.sh`
-- **Start Command**: `chmod +x start.sh && ./start.sh`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
 
 ### 3. Environment Variables
 
