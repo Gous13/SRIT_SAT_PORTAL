@@ -26,16 +26,16 @@ This guide will help you deploy your SAT Portal to Render hosting platform.
 - **Branch**: `main` (or your default branch)
 
 **Build & Deploy Settings:**
-- **Build Command**: `pip install -r backend/requirements.txt`
-- **Start Command**: `cd backend && gunicorn app:app --bind 0.0.0.0:$PORT`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
 
 ### 3. Environment Variables
 
 Add these environment variables in Render Dashboard:
 
 ```
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-gmail-app-password
+MAIL_USERNAME=anil172900@gmail.com
+MAIL_PASSWORD=kfsa nvkp ntmj fgxh
 SECRET_KEY=your-secret-key-here
 FLASK_ENV=production
 ```
