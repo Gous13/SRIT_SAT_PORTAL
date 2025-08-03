@@ -27,7 +27,7 @@ This guide will help you deploy your SAT Portal to Render hosting platform.
 
 **Build & Deploy Settings:**
 - **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
+- **Start Command**: `gunicorn wsgi:app --bind 0.0.0.0:$PORT`
 
 ### 3. Environment Variables
 
