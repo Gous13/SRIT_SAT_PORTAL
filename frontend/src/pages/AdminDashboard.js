@@ -24,9 +24,6 @@ const AdminDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('certificates');
   const [forms, setForms] = useState([]);
   const [showFormModal, setShowFormModal] = useState(false);
-  const [showResponsesModal, setShowResponsesModal] = useState(false);
-  const [selectedForm, setSelectedForm] = useState(null);
-  const [formResponses, setFormResponses] = useState([]);
 
   // Admin credentials mapping
   const adminCredentials = {
@@ -57,6 +54,15 @@ const AdminDashboard = ({ user }) => {
       setLoading(false);
     }
   }, [userBranch]);
+
+  const loadForms = useCallback(async () => {
+    try {
+      const response = await adminAPI.getForms(user.id);
+      setForms(response.data.forms);
+    } catch (error) {
+      setMessage('Failed to load forms.');
+    }
+  }, [user.id]);
 
   useEffect(() => {
     loadDashboardData();
@@ -211,17 +217,6 @@ const AdminDashboard = ({ user }) => {
       setMessage('Failed to download students report.');
     }
   };
-
-  const loadForms = async () => {
-    try {
-      const response = await adminAPI.getForms(user.id);
-      setForms(response.data.forms);
-    } catch (error) {
-      setMessage('Failed to load forms.');
-    }
-  };
-
-
 
   const handleDownloadResponses = async (formId) => {
     try {
@@ -925,68 +920,6 @@ const AdminDashboard = ({ user }) => {
          onFormCreated={loadForms}
          user={user}
        />
-
-       {/* Form Responses Modal */}
-       <Modal show={showResponsesModal} onHide={() => setShowResponsesModal(false)} size="xl">
-         <Modal.Header closeButton>
-           <Modal.Title>
-             Form Responses: {selectedForm?.title}
-           </Modal.Title>
-         </Modal.Header>
-         <Modal.Body>
-           {selectedForm && (
-             <div className="mb-4">
-               <h6>Form Details</h6>
-               <p><strong>Description:</strong> {selectedForm.description}</p>
-               <p><strong>Deadline:</strong> {new Date(selectedForm.deadline).toLocaleString()}</p>
-             </div>
-           )}
-           
-           <h6>Responses ({formResponses.length})</h6>
-           {formResponses.map((response, index) => (
-             <Card key={response.id} className="mb-3">
-               <Card.Header>
-                 <strong>{response.student_name}</strong> - {response.student_rollnumber}
-                 <br />
-                 <small className="text-muted">
-                   Submitted: {new Date(response.submitted_at).toLocaleString()}
-                 </small>
-               </Card.Header>
-               <Card.Body>
-                 {Object.entries(response.responses).map(([fieldId, value]) => {
-                   const field = selectedForm?.form_fields?.find(f => f.id === parseInt(fieldId));
-                   return (
-                     <div key={fieldId} className="mb-2">
-                       <strong>{field?.label || fieldId}:</strong>
-                       <div className="mt-1">
-                         {Array.isArray(value) ? value.join(', ') : value}
-                       </div>
-                     </div>
-                   );
-                 })}
-               </Card.Body>
-             </Card>
-           ))}
-           
-           {formResponses.length === 0 && (
-             <p className="text-muted text-center">No responses yet</p>
-           )}
-         </Modal.Body>
-         <Modal.Footer>
-           {formResponses.length > 0 && (
-             <Button 
-               variant="success" 
-               onClick={() => handleDownloadResponses(selectedForm.id)}
-               className="me-2"
-             >
-               Download Excel
-             </Button>
-           )}
-           <Button variant="secondary" onClick={() => setShowResponsesModal(false)}>
-             Close
-           </Button>
-         </Modal.Footer>
-       </Modal>
      </div>
    );
  };

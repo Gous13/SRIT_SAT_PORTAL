@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Form, Button, Alert, Badge } from 'react-bootstrap';
 import { studentAPI } from '../services/api';
 
@@ -10,14 +10,7 @@ const StudentFormDisplay = ({ form, studentId, onFormSubmitted }) => {
   const [submittedResponses, setSubmittedResponses] = useState(null);
   const [loadingResponses, setLoadingResponses] = useState(false);
 
-  // Load submitted responses if student has already responded
-  useEffect(() => {
-    if (form.has_responded) {
-      loadSubmittedResponses();
-    }
-  }, [form.id, form.has_responded, loadSubmittedResponses]);
-
-  const loadSubmittedResponses = async () => {
+  const loadSubmittedResponses = useCallback(async () => {
     setLoadingResponses(true);
     try {
       const response = await studentAPI.getFormResponse(form.id, studentId);
@@ -27,7 +20,14 @@ const StudentFormDisplay = ({ form, studentId, onFormSubmitted }) => {
     } finally {
       setLoadingResponses(false);
     }
-  };
+  }, [form.id, studentId]);
+
+  // Load submitted responses if student has already responded
+  useEffect(() => {
+    if (form.has_responded) {
+      loadSubmittedResponses();
+    }
+  }, [form.has_responded, loadSubmittedResponses]);
 
   const handleInputChange = (fieldId, value) => {
     setResponses(prev => ({
