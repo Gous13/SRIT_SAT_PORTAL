@@ -147,12 +147,18 @@ const StudentRegister = () => {
       };
 
       // Send OTP first
-      await authAPI.sendRegistrationOTP({ email: data.email });
+      const response = await authAPI.sendRegistrationOTP({ email: data.email });
       
       // Store registration data and show OTP modal
       setRegistrationData(data);
       setShowOTPModal(true);
-      setMessage('OTP sent to your email! Please check and enter the verification code.');
+      
+      // Handle development mode response
+      if (response.data?.development_mode) {
+        setMessage('OTP sent successfully! Check the server logs for the OTP code. (Development mode)');
+      } else {
+        setMessage('OTP sent to your email! Please check and enter the verification code.');
+      }
 
     } catch (error) {
       setMessage(error.response?.data?.error || 'Failed to send OTP. Please try again.');
@@ -214,8 +220,14 @@ const StudentRegister = () => {
       setOtpLoading(true);
       setOtpError('');
       
-      await authAPI.sendRegistrationOTP({ email: registrationData.email });
-      setMessage('OTP resent successfully! Please check your email.');
+      const response = await authAPI.sendRegistrationOTP({ email: registrationData.email });
+      
+      // Handle development mode response
+      if (response.data?.development_mode) {
+        setMessage('OTP resent successfully! Check the server logs for the OTP code. (Development mode)');
+      } else {
+        setMessage('OTP resent successfully! Please check your email.');
+      }
       
     } catch (error) {
       setOtpError(error.response?.data?.error || 'Failed to resend OTP. Please try again.');
